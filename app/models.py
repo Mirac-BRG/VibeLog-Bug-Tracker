@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import db
+from app import db, login_manager
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -61,3 +61,7 @@ class BugTicket(db.Model):
     
     def __repr__(self) -> str:
         return f'<BugTicket {self.title}>'
+
+@login_manager.user_loader
+def load_user(id):
+    return db.session.get(User, int(id))
