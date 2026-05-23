@@ -1,0 +1,82 @@
+from flask import render_template, redirect, url_for, flash, request, abort
+from flask_login import current_user, login_required
+from app import db
+from app.main import main
+from app.models import Project, BugTicket
+from app.main.forms import ProjectForm, BugTicketForm
+
+@main.route('/')
+@login_required
+def index():
+    projects = Project.query.filter_by(user_id=current_user.id).all()
+    return render_template('main/index.html', title='Projelerim', projects=projects)
+
+@main.route('/project/new', methods=['GET', 'POST'])
+@login_required
+def new_project():
+    form = ProjectForm()
+    if form.validate_on_submit():
+        project = Project(
+            name=form.name.data,
+            description=form.description.data,
+            user_id=current_user.id
+        )
+        db.session.add(project)
+        db.session.commit()
+        flash('Proje başarıyla oluşturuldu!', 'success')
+        return redirect(url_for('main.index'))
+    return render_template('main/new_project.html', title='Yeni Proje Ekle', form=form)
+
+@main.route('/project/<int:id>')
+@login_required
+def project_detail(id):
+    project = db.session.get(Project, id)
+    if project is None:
+        abort(404)
+    if project.user_id != current_user.id:
+        abort(403)
+        
+    page = request.args.get('page', 1, type=int)
+    # Using dynamic querying to paginate bug tickets
+    # In models.py we have bug_tickets as a list, but we can query BugTicket model directly
+    pagination = BugTicket.query.filter_by(project_id=project.id).order_by(BugTicket.created_at.desc()).paginate(
+        page=page, per_page=10, error_out=False
+    )
+    return render_template('main/project_detail.html', title=project.name, project=project, pagination=pagination)
+
+@main.route('/project/<int:project_id>/bug/new', methods=['GET', 'POST'])
+@login_required
+def new_bug(project_id):
+    project = db.session.get(Project, project_id)
+    if project is None:
+        abort(404)
+    if project.user_id != current_user.id:
+        abort(403)
+        
+    form = BugTicketForm()
+    if form.validate_on_submit():
+        bug = BugTicket(
+            title=form.title.data,
+            description=form.description.data,
+            project_id=project.id,
+            status='Open' # varsayılan statü
+        )
+        db.session.add(bug)
+        db.session.commit()
+        flash('Bug başarıyla eklendi!', 'success')
+        return redirect(url_for('main.project_detail', id=project.id))
+    return render_template('main/new_bug.html', title='Yeni Bug Ekle', form=form, project=project)
+
+@main.route('/bug/<int:id>/resolve', methods=['POST'])
+@login_required
+def resolve_bug(id):
+    bug = db.session.get(BugTicket, id)
+    if bug is None:
+        abort(404)
+    if bug.project.user_id != current_user.id:
+        abort(403)
+        
+    bug.status = 'Closed'
+    db.session.commit()
+    flash(f'Bug "{bug.title}" çözüldü olarak işaretlendi.', 'success')
+    return redirect(url_for('main.project_detail', id=bug.project_id))

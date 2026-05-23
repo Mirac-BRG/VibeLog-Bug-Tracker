@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm mt-4 mb-5">
+            <div class="card-body p-4 p-md-5">
+                <h3 class="card-title text-center mb-4">Yeni Proje Ekle</h3>
+                <form action="" method="post" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label fw-bold") }}
+                        {% if form.name.errors %}
+                            {{ form.name(class="form-control is-invalid", placeholder="Örn: E-Ticaret Uygulaması") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.name(class="form-control", placeholder="Örn: E-Ticaret Uygulaması") }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.description.label(class="form-label fw-bold") }}
+                        {% if form.description.errors %}
+                            {{ form.description(class="form-control is-invalid", rows="4", placeholder="Proje hakkında kısa bilgi...") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.description(class="form-control", rows="4", placeholder="Proje hakkında kısa bilgi...") }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">İptal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -254,3 +254,71 @@ Create the views using Bootstrap 5 to provide a modern, responsive, and clean us
 4. Navigate to `/auth/login` and log in with the newly created credentials.
 5. Verify that the navigation bar updates to show the "Logout" button.
 6. Click "Logout" and verify the session ends and redirects properly.
+
+
+
+# VibeLog Bug Tracker Main Features Implementation Plan
+
+This plan details the implementation of the core features for managing projects and bug tickets in the Flask application.
+
+## User Review Required
+
+> [!IMPORTANT]
+> - Please review the proposed routes and template structure.
+> - The status of a bug will be marked as `Closed` (or `Çözüldü`). Let me know if you want any specific other statuses (e.g. `In Progress`).
+> - The UI will be built using Bootstrap 5, taking inspiration from the existing `register.html` for form designs.
+> - By default, I will set `per_page=10` for pagination in the `project_detail` route as requested.
+
+## Proposed Changes
+
+### `app/main` (Main Blueprint)
+
+#### [MODIFY] `app/main/__init__.py`
+- Uncomment `from app.main import routes` at the bottom to register the routes with the main blueprint.
+
+#### [NEW] `app/main/forms.py`
+- Create `ProjectForm` with `name` (StringField), `description` (TextAreaField), and `submit` button.
+- Create `BugTicketForm` with `title` (StringField), `description` (TextAreaField), and `submit` button.
+
+#### [NEW] `app/main/routes.py`
+- Create the following routes, all decorated with `@login_required`:
+  - `GET /`: `index` view. Fetch user's projects (`Project.query.filter_by(user_id=current_user.id)`) and render `main/index.html`.
+  - `GET, POST /project/new`: `new_project` view. Handle `ProjectForm` submission. Ensure `user_id` is set to `current_user.id`.
+  - `GET /project/<int:id>`: `project_detail` view. Fetch project, verify ownership (`project.user_id == current_user.id` or 403). Fetch paginated bug tickets (`BugTicket.query.filter_by(project_id=id).paginate(...)`). Render `main/project_detail.html`.
+  - `GET, POST /project/<int:project_id>/bug/new`: `new_bug` view. Fetch project, verify ownership. Handle `BugTicketForm` submission.
+  - `POST /bug/<int:id>/resolve`: `resolve_bug` view. Fetch bug, verify project ownership. Update bug status to 'Closed' (or 'Çözüldü').
+
+---
+
+### `app/templates/main` (Templates)
+
+#### [NEW] `app/templates/main/index.html`
+- Dashboard layout showing a list/grid of user projects.
+- Include a button to create a new project (`/project/new`).
+
+#### [NEW] `app/templates/main/new_project.html`
+- Form page utilizing Bootstrap 5 to add a new project. Similar design to authentication forms.
+
+#### [NEW] `app/templates/main/project_detail.html`
+- Display project name and description.
+- Include a button to add a new bug ticket.
+- A table or card list showing paginated bug tickets.
+- Pagination controls at the bottom.
+- A POST form/button on open bugs to trigger the `/bug/<int:id>/resolve` route.
+
+#### [NEW] `app/templates/main/new_bug.html`
+- Form page to add a new bug ticket to the specified project.
+
+## Verification Plan
+
+### Automated Tests
+- No automated tests are explicitly requested, but I can use manual browser verification or unit tests if required.
+
+### Manual Verification
+- Log in to the application.
+- Create a new project.
+- Verify the project appears on the dashboard (`/`).
+- Click the project to view details (`/project/<int:id>`).
+- Add multiple bugs (more than 10) to see if pagination works.
+- Attempt to resolve a bug and check if its status updates correctly.
+- Try accessing another user's project ID in the URL to ensure 403 Forbidden is returned.

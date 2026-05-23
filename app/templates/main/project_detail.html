@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Projelerim</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ project.name }}</h2>
+        <p class="text-muted">{{ project.description or 'Bu proje için açıklama bulunmuyor.' }}</p>
+    </div>
+    <div class="col-md-4 text-md-end align-self-center mt-3 mt-md-0">
+        <a href="{{ url_for('main.new_bug', project_id=project.id) }}" class="btn btn-danger">
+            <i class="bi bi-bug-fill"></i> Yeni Bug Ekle
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Bug Listesi</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if pagination.items %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="ps-4">Başlık</th>
+                            <th scope="col">Statü</th>
+                            <th scope="col">Oluşturulma Tarihi</th>
+                            <th scope="col" class="text-end pe-4">Aksiyon</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bug in pagination.items %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold">{{ bug.title }}</div>
+                                <div class="small text-muted text-truncate" style="max-width: 300px;">{{ bug.description }}</div>
+                            </td>
+                            <td>
+                                {% if bug.status == 'Open' %}
+                                    <span class="badge bg-warning text-dark">Açık</span>
+                                {% elif bug.status == 'Closed' or bug.status == 'Çözüldü' %}
+                                    <span class="badge bg-success">Çözüldü</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ bug.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ bug.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td class="text-end pe-4">
+                                {% if bug.status == 'Open' %}
+                                    <form action="{{ url_for('main.resolve_bug', id=bug.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-success">Çözüldü İşaretle</button>
+                                    </form>
+                                {% else %}
+                                    <button class="btn btn-sm btn-secondary" disabled>Çözüldü</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <h5 class="text-muted">Bu projede henüz hiç bug kaydı yok! 🎉</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if pagination.pages > 1 %}
+<nav aria-label="Bug listesi sayfalama" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('main.project_detail', id=project.id, page=pagination.prev_num) if pagination.has_prev else '#' }}" tabindex="-1" aria-disabled="true">Önceki</a>
+        </li>
+        
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if pagination.page == page_num %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.project_detail', id=project.id, page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('main.project_detail', id=project.id, page=pagination.next_num) if pagination.has_next else '#' }}">Sonraki</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}
