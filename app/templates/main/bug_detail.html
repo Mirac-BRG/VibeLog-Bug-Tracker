@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb bg-white px-3 py-2 rounded-pill shadow-sm d-inline-flex">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none"><i class="bi bi-house-door-fill me-1"></i>Projelerim</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.project_detail', id=bug.project.id) }}" class="text-decoration-none">{{ bug.project.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ bug.title }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm mb-5 border-0 rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+                    <h2 class="card-title fw-bold text-dark mb-0"><i class="bi bi-bug me-2 text-danger"></i>{{ bug.title }}</h2>
+                    
+                    <div>
+                        {% if bug.status == 'Open' %}
+                            <span class="badge rounded-pill bg-warning text-dark px-4 py-2 fs-6 shadow-sm"><i class="bi bi-exclamation-circle-fill me-1"></i>Açık</span>
+                        {% elif bug.status == 'Closed' or bug.status == 'Çözüldü' %}
+                            <span class="badge rounded-pill bg-success px-4 py-2 fs-6 shadow-sm"><i class="bi bi-check-circle-fill me-1"></i>Çözüldü</span>
+                        {% else %}
+                            <span class="badge rounded-pill bg-secondary px-4 py-2 fs-6 shadow-sm">{{ bug.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center text-muted small mb-4 pb-3 border-bottom">
+                    <span class="me-4"><i class="bi bi-folder2-open me-1"></i><strong>Proje:</strong> <a href="{{ url_for('main.project_detail', id=bug.project.id) }}" class="text-decoration-none text-muted">{{ bug.project.name }}</a></span>
+                    <span><i class="bi bi-clock me-1"></i><strong>Oluşturulma:</strong> {{ bug.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                </div>
+                
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-text-left me-2 text-primary"></i>Açıklama</h5>
+                    <div class="p-4 bg-light rounded-4 border">
+                        <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;">{{ bug.description }}</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top flex-wrap gap-2">
+                    <a href="{{ url_for('main.project_detail', id=bug.project.id) }}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-1"></i> Projeye Dön
+                    </a>
+                    
+                    {% if bug.status == 'Open' %}
+                        <form action="{{ url_for('main.resolve_bug', id=bug.id) }}" method="POST" class="d-inline m-0 p-0">
+                            <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm hover-card">
+                                <i class="bi bi-check2-all me-1"></i> Çözüldü İşaretle
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

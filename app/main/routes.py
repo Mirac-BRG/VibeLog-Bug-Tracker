@@ -80,3 +80,23 @@ def resolve_bug(id):
     db.session.commit()
     flash(f'Bug "{bug.title}" çözüldü olarak işaretlendi.', 'success')
     return redirect(url_for('main.project_detail', id=bug.project_id))
+
+@main.route('/bug/<int:bug_id>')
+@login_required
+def bug_detail(bug_id):
+    bug = db.session.get(BugTicket, bug_id)
+    if bug is None:
+        abort(404)
+    if bug.project.user_id != current_user.id:
+        abort(403)
+        
+    return render_template('main/bug_detail.html', title=bug.title, bug=bug)
+
+@main.app_errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html', title='Sayfa Bulunamadı'), 404
+
+@main.app_errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('500.html', title='Sunucu Hatası'), 500
