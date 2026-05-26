@@ -20,8 +20,16 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
                     {% if current_user.is_authenticated %}
+                        <li class="nav-item me-lg-3 my-2 my-lg-0">
+                            <form action="{{ url_for('main.search') }}" method="GET" class="d-flex">
+                                <div class="position-relative">
+                                    <input class="form-control search-glass ps-4" type="search" name="q" placeholder="Bug kayıtlarında ara..." aria-label="Search" required>
+                                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-white-50"></i>
+                                </div>
+                            </form>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#"><i class="bi bi-person-circle me-1"></i> Profil ({{ current_user.username }})</a>
                         </li>

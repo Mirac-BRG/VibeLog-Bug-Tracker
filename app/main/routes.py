@@ -92,6 +92,25 @@ def bug_detail(bug_id):
         
     return render_template('main/bug_detail.html', title=bug.title, bug=bug)
 
+@main.route('/search')
+@login_required
+def search():
+    q = request.args.get('q', '').strip()
+    if not q:
+        flash('Lütfen aramak için bir kelime girin.', 'warning')
+        return redirect(request.referrer or url_for('main.index'))
+        
+    page = request.args.get('page', 1, type=int)
+    
+    pagination = BugTicket.query.join(Project).filter(
+        Project.user_id == current_user.id,
+        (BugTicket.title.ilike(f'%{q}%') | BugTicket.description.ilike(f'%{q}%'))
+    ).order_by(BugTicket.created_at.desc()).paginate(
+        page=page, per_page=10, error_out=False
+    )
+    
+    return render_template('main/search_results.html', title='Arama Sonuçları', pagination=pagination, q=q)
+
 @main.app_errorhandler(404)
 def not_found_error(error):
     return render_template('404.html', title='Sayfa Bulunamadı'), 404
