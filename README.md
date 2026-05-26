@@ -1,6 +1,6 @@
 # VibeLog Hata Takip Sistemi (Bug Tracker)
 
-Demo Videosu: [https://drive.google.com/file/d/1cFBAnjo4wb9cnwB0c10Tmau6oOqHnfFw/view?usp=sharing]
+Demo Videosu: [https://drive.google.com/file/d/1XgD6BYhw1TikT-ZdUc3MkIUWyFGYQDzU/view?usp=sharing]
 BLG106 İnternet Programcılığı dersi kapsamında, AI destekli "Vibe Coding" yaklaşımıyla geliştirilmiş Flask tabanlı hata takip uygulaması olan
 VibeLog, kullanıcıların kendi yazılım projelerini oluşturarak bu projelere ait yazılım hatalarını (bug) kayıt altına almasını, yönetmesini ve çözüldü olarak işaretlemesini sağlayan modern ve kullanıcı dostu bir hata takip sistemidir. Her kullanıcı yalnızca kendi projelerini ve hatalarını yönetebilir. Proje, şık arayüzü ve verimli mimarisiyle geliştirme süreçlerini hızlandırmak amacıyla tasarlanmıştır.
 
