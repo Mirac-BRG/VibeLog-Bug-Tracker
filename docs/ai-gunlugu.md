@@ -113,3 +113,23 @@ Görünüm: Manager
 Ajanın getirdiği planda yetki kontrolü mekanizmasının doğruluğundan emin olmak istedim. Ajan, sadece `BugTicket` tablosunu sorgulamakla kalmayıp, ilişki (relationship) üzerinden `bug.project.user_id` özelliğine erişerek doğru bir sahiplik doğrulaması yaptı. Kodu inceleyip güvenlik mantığının kusursuz kurgulandığına ikna olduktan sonra onay verdim.
 ### Bu Oturumdan Öğrendiğim
 Veritabanındaki Foreign Key (Yabancı Anahtar) ve ORM (Object-Relational Mapping) ilişkilerinin pratikte ne kadar işlevsel olduğunu anladım. Bir modele bağlı olan diğer modele geçiş yaparak (`bug.project.user_id` gibi) çapraz yetki kontrollerinin çok temiz bir şekilde yazılabileceğini öğrendim.
+
+## Oturum 8: Profil Özelleştirme ve Veritabanı Migrasyon Krizi
+### Hedef
+Kullanıcılara avatar yükleme ve "Karanlık Mod (Dark Mode)" seçeneği sunmak için User veritabanı tablosuna yeni sütunlar eklemek.
+### Karşılaştığım Hatalar ve Çözümler
+- **Hata:** Ajanın yazdığı kodlarla veritabanını güncellerken (upgrade) SQL'den direkt şu hatayı aldım: `Cannot add a NOT NULL column with default value NULL`.
+- **Çözüm:** Ajanın Python tarafında varsayılan değer atadığını ama bunu SQL seviyesine yansıtmayı unuttuğunu fark ettim. İçeride zaten kayıtlı kullanıcılar olduğu için SQLite eski kullanıcılara ne değer vereceğini bilemeyip çökmüştü. Migrasyon dosyasına girip `server_default='default.png'` ve karanlık mod için `server_default='0'` parametrelerini manuel olarak ekleyerek sorunu bizzat çözdüm.
+### Bu Oturumdan Öğrendiğim
+Veritabanı şemalarını güncellerken (özellikle SQLite gibi katı kuralları olan sistemlerde) yapay zekanın yazdığı migrasyon kodlarına körü körüne güvenmemek gerektiğini, arka planda SQL'in nasıl çalıştığını bilmenin hayat kurtardığını anladım.
+
+---
+
+## Oturum 9: CSS ve Bootstrap İnatlaşması
+### Hedef
+Karanlık modu aktifleştirdiğimde arayüzün tamamen koyu renklere bürünmesini sağlamak.
+### Karşılaştığım Hatalar ve Çözümler
+- **Hata:** Ajanın yazdığı karanlık mod kodlarını uygulamama rağmen (defalarca Ctrl+F5 atmama rağmen) arayüzün yarısı aydınlık, yarısı karanlık kalıyordu. Beyaz kartlar siyah oluyor ama arka plan inatla parlıyordu. 
+- **Çözüm:** Sorunun benim yazdığım CSS'ten değil, `base.html` içindeki hazır Bootstrap `bg-light` class'larından kaynaklandığını teşhis ettim. Ajanın nazik CSS kodları Bootstrap'i ezemiyordu. Ben de `style.css` dosyasına girip karanlık mod için `!important` kalkanını kullanarak arayüze karanlık temayı zorla (override ederek) giydirdim. 
+### Bu Oturumdan Öğrendiğim
+Front-end geliştirirken framework'lerin (Bootstrap) kendi stillerinin ne kadar baskın (specificity) olabileceğini ve gerektiğinde CSS hiyerarşisini `!important` ile kırmanın arayüz hatalarını kökünden çözdüğünü tecrübe ettim.
