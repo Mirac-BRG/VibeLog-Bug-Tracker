@@ -1,9 +1,12 @@
-from flask import render_template, redirect, url_for, flash, request, abort
+import os
+import time
+from werkzeug.utils import secure_filename
+from flask import render_template, redirect, url_for, flash, request, abort, current_app
 from flask_login import current_user, login_required
 from app import db
 from app.main import main
 from app.models import Project, BugTicket
-from app.main.forms import ProjectForm, BugTicketForm
+from app.main.forms import ProjectForm, BugTicketForm, UpdateProfileForm
 
 @main.route('/')
 @login_required
@@ -110,6 +113,38 @@ def search():
     )
     
     return render_template('main/search_results.html', title='Arama Sonuçları', pagination=pagination, q=q)
+
+@main.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    form = UpdateProfileForm()
+    if form.validate_on_submit():
+        if form.avatar.data:
+            avatar_file = form.avatar.data
+            filename = secure_filename(avatar_file.filename)
+            ext = os.path.splitext(filename)[1]
+            new_filename = f"user_{current_user.id}_{int(time.time())}{ext}"
+            
+            upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
+            os.makedirs(upload_dir, exist_ok=True)
+            file_path = os.path.join(upload_dir, new_filename)
+            avatar_file.save(file_path)
+            
+            current_user.avatar_image = new_filename
+            
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        current_user.dark_mode = form.dark_mode.data
+        
+        db.session.commit()
+        flash('Hesabınız başarıyla güncellendi!', 'success')
+        return redirect(url_for('main.profile'))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+        form.dark_mode.data = current_user.dark_mode
+        
+    return render_template('main/profile.html', title='Profilim', form=form)
 
 @main.app_errorhandler(404)
 def not_found_error(error):
